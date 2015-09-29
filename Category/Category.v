@@ -29,7 +29,9 @@ Class Category : Type :=
   id_unit_left : ∀ (a b : Obj) (h : a –≻ b), id ∘ h = h;
 
   (** id right unit: *)
-  id_unit_right : ∀ (a b : Obj) (h : a –≻ b), h ∘ id = h
+  id_unit_right : ∀ (a b : Obj) (h : a –≻ b), h ∘ id = h;
+
+  Hom_HSet : ∀ (a b : Obj), IsHSet (Hom a b)
 }.
 
 Arguments Obj {_}, _.
@@ -38,6 +40,7 @@ Arguments Hom {_} _ _, _ _ _.
 Arguments compose {_} {_ _ _} _ _, _ {_ _ _} _ _, _ _ _ _ _ _.
 Arguments assoc {_ _ _ _ _} _ _ _.
 Arguments assoc_sym {_ _ _ _ _} _ _ _.
+Arguments Hom_HSet {_ _ _} _ _ _ _, {_} _ _ _ _ _ _, _ _ _ _ _ _ _.
 
 Notation "f ∘ g" := (compose g f) : morphism_scope.
 Notation "a –≻ b" := (Hom a b) : morphism_scope.

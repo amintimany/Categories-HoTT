@@ -23,8 +23,9 @@ Definition Opposite (C : Category) : Category :=
 
   id_unit_left := fun _ _ h => @id_unit_right C _ _ h;
   
-  id_unit_right := fun _ _ h => @id_unit_left C _ _ h
-                   
+  id_unit_right := fun _ _ h => @id_unit_left C _ _ h;
+
+  Hom_HSet := fun x y => Hom_HSet y x
 |}.
 
 Notation "C '^op'" := (Opposite C) : category_scope.

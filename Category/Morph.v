@@ -86,8 +86,8 @@ Proof.
   destruct I as [iI inI Il Ir]; destruct I' as [iI' inI' Il' Ir'].
   cbn in *.
   destruct H1; destruct H2.
-  destruct (proof_irrelevance _ Il Il').
-  destruct (proof_irrelevance _ Ir Ir').
+  destruct (@center _ (Hom_HSet _ _ _ _ Il Il')).
+  destruct (@center _ (Hom_HSet _ _ _ _ Ir Ir')).
   trivial.  
 Qed.  
 

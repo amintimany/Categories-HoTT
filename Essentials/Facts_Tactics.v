@@ -2,9 +2,11 @@ Require Import Essentials.Notations.
 Require Import Essentials.Types.
 
 Require Export Coq.Program.Tactics.
-Require Export Coq.Program.Equality.
-Require Export Coq.Logic.FunctionalExtensionality.
-Require Export Coq.Logic.ProofIrrelevance.
+(*Require Export Coq.Program.Equality.*)
+(*Require Export Coq.Logic.FunctionalExtensionality.*)
+(*Require Export Coq.Logic.ProofIrrelevance.*)
+
+Require Export HoTT.Basics.Overture.
 
 Ltac basic_simpl :=
   let simpl_prod _ :=
@@ -33,7 +35,21 @@ Ltac basic_simpl :=
 
 Global Obligation Tactic := basic_simpl; auto.
 
+Definition f_equal {A B : Type} (f : A → B) {x y : A} (H : x = y) : f x = f y.
+Proof.
+  destruct H.
+  trivial.
+Defined.
+
+Definition equal_f {A B : Type} {f g : A → B} (H : f = g) : ∀ x : A, f x = g x.
+Proof.
+  intros x.
+  destruct H.
+  trivial.
+Defined.
+
 (** A tactic to apply proof irrelevance on all proofs of the same type in the context. *)
+(*
 Ltac PIR :=
   let pir_helper _ :=
       match goal with
@@ -46,11 +62,11 @@ Ltac PIR :=
   in
   repeat pir_helper tt
 .
-
+*)
 (** A tactic to eliminate equalities in the context. *)
 Ltac ElimEq := repeat match goal with [H : _ = _|- _] => destruct H end.
 
-Hint Extern 1 => progress ElimEq.
+(*Hint Extern 1 => progress ElimEq. *)
 
 (** A tactic to simplify terms before rewriting them. *)
 
@@ -81,17 +97,35 @@ Tactic Notation "cbn_rewrite" "<-" constr(W) "in" hyp_list(V) := cbn_rewrite_bac
 
 (** Equality on sigma type under proof irrelevance *)
 
-Lemma sig_proof_irrelevance {A : Type} (P : A → Prop) (X Y : sig P) : proj1_sig X = proj1_sig Y → X = Y.
+Lemma sig_proof_irrelevance
+      {A : Type}
+      (P : A → Type)
+      {PHProp : ∀ x, IsHProp (P x)}
+      (X Y : sigT P)
+  : proj1_sig X = proj1_sig Y → X = Y.
 Proof.
-  basic_simpl.
-  ElimEq.
-  PIR.
+  intros H.
+  destruct X as [x Hx].
+  destruct Y as [y Hy].
+  cbn in *.
+  destruct H.
+  destruct (@center _ (PHProp x Hx Hy)).
   trivial.
 Qed.
 
-Hint Extern 2 (exist ?A _ _ = exist ?A _ _) => apply sig_proof_irrelevance.
+Hint Extern 2 (existT ?A _ _ = existT ?A _ _) => apply sig_proof_irrelevance.
 
 (* Automating use of functional_extensionality *)
+
+Monomorphic Axiom funxt : dummy_funext_type.
+Global Instance funext : Funext := {dummy_funext_value := funxt}.
+
+Tactic Notation "extensionality" ident(x) :=
+  match goal with
+    [ |- ?X = ?Y ] =>
+    (apply (@path_forall funext _ _ X Y)) ; intro x
+  end.
+
 Ltac FunExt := 
 progress (
     repeat (
@@ -105,6 +139,7 @@ progress (
 .
 
 Hint Extern 1 => FunExt.
+
 
 Lemma pair_eq (A B : Type) (a b : A * B) : fst a = fst b → snd a = snd b → a = b.
 Proof.

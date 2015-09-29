@@ -175,3 +175,4 @@ PreSheaf/Topos.v
 Demo/Demo.v
 
 -R . Categories
+COQC = hoqc
