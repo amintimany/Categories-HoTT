@@ -12,6 +12,7 @@ Local Open Scope isomorphism_scope.
 Local Open Scope morphism_scope.
 Local Open Scope object_scope.
 
+(*
 (** If two categories are isomorphic, then so are their duals. *)
 Section Opposite_Cat_Iso.
   Context {C D : Category} (I : C ≃≃ D ::> Cat).
@@ -218,3 +219,4 @@ Section IsoCat_NatIso.
   Qed.
 
 End IsoCat_NatIso.
+*)

@@ -1,6 +1,7 @@
 Require Import Essentials.Notations.
 Require Import Essentials.Types.
 Require Import Essentials.Facts_Tactics.
+Require Import Essentials.HoTT_Facts.
 
 (** The basic definition of a category *)
 Class Category : Type :=
@@ -262,3 +263,28 @@ match goal with
     repeat rewrite assoc;
     (idtac + symmetry); apply H
 end.
+
+
+(** Tactic for proving ∀ x₁ ... xₙ, IsHProp (X = Y) where X and Y are homomorphisms. *)
+Ltac IsHProp_Hom_eq :=
+  repeat (apply @trunc_forall; [typeclasses eauto|intros ?x]);
+  refine (Hom_HSet _ _)
+.
+
+(** Tactic for proving U = V where U and V have a type of the from ∀ x₁ ... xₙ, IsHProp (X = Y). *)
+Ltac HomPIR U V :=
+  match type of U with
+    ?A =>
+    let H := fresh "H" in
+    assert (H : IsHProp A) by IsHProp_Hom_eq;
+      destruct (@center _ (H U V)); clear H
+  end
+.
+
+(** Apply HomPIR as necessary. *)
+Ltac doHomPIR :=
+  repeat
+    match goal with
+      [H : ?A, H' : ?A|- _] => HomPIR H H'
+    end
+.

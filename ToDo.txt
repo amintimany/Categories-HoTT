@@ -1,0 +1,13 @@
+*) The following are commented. They should be changed to be provable. We should either define a special type for isomorphism of categories
+or prove define these for the spcial case of Cat (now only of categories whose objects form an HSet).
+
+-- IsoCat_NatTrans
+-- IsoCat_NatTrans_back
+-- Func_Cat_Op_Iso
+-- Discr_Cat_Dual_Iso
+-- Discr_Cat_Iso
+-- Cat_Iso.v (the whole file)
+
+*) Functor_Image must be changed so that the criterion for homomorphisms is an HProp. This can be done by truncating the Forall_Links part to HProp.
+
+*) Type Type_n can't be immediately defined as < on natural numbers is not defined.

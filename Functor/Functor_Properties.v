@@ -77,7 +77,7 @@ to an aobject isomorphic to it. *)
                   match eq in _ = y return
                         (_ –≻ y)%morphism
                   with
-                    eq_refl => id (F _o c)
+                    idpath => id (F _o c)
                   end
               );
           inverse_morphism :=
@@ -88,12 +88,12 @@ to an aobject isomorphic to it. *)
                   match eq in _ = y return
                         (y –≻ _)%morphism
                   with
-                    eq_refl => id (F _o c)
+                    idpath => id (F _o c)
                   end
               )
         |}
   .
-
+    
   (** Any fully-faithful functor is conservative.
 
 A conservative functor is one for which we have to objects of the domain category are isomorphic if their images are ismorphic. *)

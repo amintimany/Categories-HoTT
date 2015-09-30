@@ -1,6 +1,7 @@
 Require Import Essentials.Notations.
 Require Import Essentials.Types.
 Require Import Essentials.Facts_Tactics.
+Require Import Essentials.HoTT_Facts.
 Require Import Category.Category.
 
 (**
@@ -13,13 +14,11 @@ We furthermore, require that the Hom_Cri provides that identity arrows of all ob
 Section SubCategory.
   Context (C : Category)
           (Obj_Cri : Obj → Type)
-          (Hom_Cri : ∀ a b, (a –≻ b)%morphism → Type)
-          (Hom_Cri_HProp : ∀ a b h, IsHProp (Hom_Cri a b h))
+          (Hom_Cri : ∀ a b, (a –≻ b)%morphism → hProp)
   .
   
 
   Arguments Hom_Cri {_ _} _.
-  Arguments Hom_Cri_HProp {_ _} _ _ _.
   
   Context (Hom_Cri_id : ∀ a, Obj_Cri a → Hom_Cri (id a))
           (Hom_Cri_compose : ∀ a b c (f : (a –≻ b)%morphism) (g : (b –≻ c)%morphism),
@@ -48,6 +47,8 @@ Section SubCategory.
         existT _ _ (Hom_Cri_id (projT2 a))
   |}.
 
+  Local Hint Extern 1 => apply istrunc_trunctype_type.
+
   Next Obligation.
   Proof.
     intros.
@@ -68,78 +69,16 @@ Section SubCategory.
 
   Solve Obligations.
 
-  Definition eq_sig_morph_eq_morph
-             {a b : C}
-             {h h' : sigT (@Hom_Cri a b)}
-             (H : h = h')
-    : projT1 h = projT1 h'
-  .
-  Proof.
-    destruct H.
-    reflexivity.
-  Defined.
-
-  Definition eq_morph_eq_sig_morph
-             {a b : C}
-             {h h' : sigT (@Hom_Cri a b)}
-             (H : projT1 h = projT1 h')
-    : h = h'
-  .
-  Proof.
-    destruct h as [x Hx].
-    destruct h' as [y Hy].
-    cbn in H.
-    destruct H.
-    destruct (@center _ (Hom_Cri_HProp x Hx Hy)).
-    reflexivity.
-  Defined.
-
-  Theorem eq_sig_morph_eq_morph_inv
-             {a b : C}
-             {h h' : sigT (@Hom_Cri a b)}
-             (H : h = h')
-    : eq_morph_eq_sig_morph (eq_sig_morph_eq_morph H) = H
-  .
-  Proof.
-    unfold eq_sig_morph_eq_morph, eq_morph_eq_sig_morph.
-    destruct H.
-    destruct h as [x Hx].
-    rewrite (@contr _ (Hom_Cri_HProp x Hx Hx) idpath).
-    reflexivity.
-  Defined.
-
-  Theorem eq_morph_eq_sig_morph_inv
-             {a b : C}
-             {h h' : sigT (@Hom_Cri a b)}
-             (H : projT1 h = projT1 h')
-    : eq_sig_morph_eq_morph (eq_morph_eq_sig_morph H) = H
-  .
-  Proof.
-    unfold eq_sig_morph_eq_morph, eq_morph_eq_sig_morph.
-    destruct h as [x Hx]; destruct h' as [y Hy].
-    cbn in *.
-    destruct H.
-    destruct (@center _ _).
-    reflexivity.
-  Defined.
-  
   Next Obligation.
   Proof.
-    intros [x Hx] [y Hy] eq eq'.
-    cbn in *.
-    rewrite <- (eq_sig_morph_eq_morph_inv eq).
-    rewrite <- (eq_sig_morph_eq_morph_inv eq').
-    refine (BuildContr _ _ _).
-    apply f_equal.
-    eapply (@center _ (Hom_HSet _ _ _ _)).
-    intros u.
-    destruct (@center _ _); cbn.
-    destruct eq'.
-    cbn in *.
-    destruct (@center _ _).
-    
-    
-      
+    apply
+      (
+        @Trunc_then_sig_HProp_Trunc
+          (-1)
+          ((@BuildTruncType 0 (a1 –≻ b1)%morphism (@Hom_HSet _ _ _)))
+      ).
+  Qed.
+
 End SubCategory.
 
 

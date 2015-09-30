@@ -55,8 +55,8 @@ Program Definition Diag_Func (C : Category) : C –≻ (C × C) :=
 {|
   FO := fun a => (a, a);
   FA := fun _ _ f => (f, f);
-  F_id := fun _ => eq_refl;
-  F_compose := fun _ _ _ _ _ => eq_refl
+  F_id := fun _ => idpath;
+  F_compose := fun _ _ _ _ _ => idpath
 |}.
 
 Theorem Prod_Functor_Cat_Proj {C D D' : Category} (F : C –≻ (D × D')) : ((Prod_Functor ((Cat_Proj1 _ _) ∘ F) ((Cat_Proj2 _ _) ∘ F)) ∘ (Diag_Func C))%functor = F.
@@ -68,8 +68,8 @@ Program Definition Twist_Func (C C' : Category) : (C × C') –≻ (C' × C) :=
 {|
   FO := fun a => (snd a, fst a);
   FA := fun _ _ f => (snd f, fst f);
-  F_id := fun _ => eq_refl;
-  F_compose := fun _ _ _ _ _ => eq_refl
+  F_id := fun _ => idpath;
+  F_compose := fun _ _ _ _ _ => idpath
 |}.
 
 Section Twist_Prod_Func_Twist.

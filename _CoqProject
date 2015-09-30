@@ -2,6 +2,7 @@
 Essentials/Notations.v
 Essentials/Types.v
 Essentials/Facts_Tactics.v
+Essentials/HoTT_Facts.v
 
 #Category:
 Category/Category.v

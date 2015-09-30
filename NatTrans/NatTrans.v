@@ -1,6 +1,7 @@
 Require Import Essentials.Notations.
 Require Import Essentials.Types.
 Require Import Essentials.Facts_Tactics.
+Require Import Essentials.HoTT_Facts.
 Require Import Category.Main.
 Require Import Functor.Functor.
 Require Import Cat.Cat.
@@ -33,20 +34,26 @@ Trans_com_sym is the symmetric form of Trans_com.
   Record NatTrans (F F' : (C –≻ C')%functor) :=
     {
       Trans (c : C) : ((F _o c) –≻ (F' _o c))%object%morphism;
-      Trans_com {c c' : C} (h : (c –≻ c')%morphism) : ((Trans c') ∘ F _a h = F' _a h ∘ (Trans c))%morphism;
-      Trans_com_sym {c c' : C} (h : (c –≻ c')%morphism) : (F' _a h ∘ (Trans c) = (Trans c') ∘ F _a h)%morphism
+      Trans_com {c c' : C} (h : (c –≻ c')%morphism) :
+        ((Trans c') ∘ F _a h = F' _a h ∘ (Trans c))%morphism;
+      Trans_com_sym {c c' : C} (h : (c –≻ c')%morphism) :
+        (F' _a h ∘ (Trans c) = (Trans c') ∘ F _a h)%morphism
     }.
 
   Notation "F –≻ F'" := (NatTrans F F') : nattrans_scope.
 
   (** Two natural transformations are equal if their arrow families are. That is, commutative diagrams are assumed to be equal by proof irrelevance. *)
-  Lemma NatTrans_eq_simplify {F F' : (C –≻ C')%functor} (N N' : (F –≻ F')%nattrans) : (@Trans _ _ N) = (@Trans _ _ N') -> N = N'.
+  Lemma NatTrans_eq_simplify
+        {F F' : (C –≻ C')%functor}
+        (N N' : (F –≻ F')%nattrans)
+    :
+      (@Trans _ _ N) = (@Trans _ _ N') → N = N'.
   Proof.
     destruct N; destruct N'.
     basic_simpl.
     ElimEq.
-    PIR; trivial.
-  Qed.
+    doHomPIR; trivial.
+  Defined.
 
 End NatTrans.
 
@@ -141,3 +148,68 @@ Section NatTrans_Props.
 End NatTrans_Props.
 
 Hint Resolve NatTrans_eq_simplify.
+
+(** Natural transformations between two functors form an HSet. 
+We show this by providing a left inverse to the NatTrans_eq_simplify.
+*)
+Section NatTrans_HSet.
+  Context
+    {C D : Category}
+    (F G : (C –≻ D)%functor)
+  .
+
+  Definition NatTrans_eq_simplify_inv
+             {N N' : (F –≻ G)%nattrans}
+             (H : N = N')
+    :
+      (Trans N) = (Trans N')
+    :=
+      match H in _ = u return
+            _ = Trans u
+      with
+        idpath => idpath
+      end.
+
+  Theorem NatTrans_eq_simplify_inv_is_left_inv
+             {N N' : (F –≻ G)%nattrans}
+             (H : N = N')
+    :
+      NatTrans_eq_simplify _ _ (NatTrans_eq_simplify_inv H) = H
+  .
+  Proof.
+    destruct H.
+    cbn.
+    repeat rewrite (@contr _ _ idpath).
+    trivial.
+  Qed.        
+
+  Theorem NatTrans_HSet : IsHSet (F –≻ G).
+  Proof.
+    intros N N' H1 H2.
+    destruct H1.
+    cbn in *.
+    match type of (Trans N) with
+      ?A => 
+      assert (Hc : IsHSet (A));
+        [
+          repeat (apply @trunc_forall; [typeclasses eauto|intros ?x]);
+          refine (Hom_HSet)
+        |
+        ]
+    end.
+    apply
+      (
+        @left_inv_equi_trunc
+          (N = N)
+          _
+          _
+          (Hc (Trans N) (Trans N))
+          NatTrans_eq_simplify_inv
+          (NatTrans_eq_simplify _ _)
+          NatTrans_eq_simplify_inv_is_left_inv
+          idpath
+          H2
+      ).
+  Qed.
+
+End NatTrans_HSet.

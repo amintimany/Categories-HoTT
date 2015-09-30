@@ -2,9 +2,36 @@ Global Set Primitive Projections.
 
 Global Set Universe Polymorphism.
 
+Require Import HoTT.Basics.Overture.
+Require Import HoTT.Basics.Trunc.
+
+Definition HUnit : hProp.
+Proof.
+  apply (@BuildTruncType -1 Unit).
+  intros x y.
+  refine (@BuildContr _ _ _).
+  destruct x; destruct y; trivial.
+  intros u.
+  destruct x.
+  destruct u.
+  trivial.
+Defined.
+
 (** The Empty Type. *)
 Inductive Empty : Type :=.
 
+Instance Empty_HProp : IsHProp Empty.
+Proof.
+  intros [].
+Qed.
+
+Definition Empty_HSet : IsHSet Empty.
+Proof.
+  typeclasses eauto.
+  Show Proof.
+Qed.
+
+  
 Hint Extern 1 =>
 let tac := (repeat intros ?); match goal with [H : Empty |- _] => destruct H end in
 match goal with

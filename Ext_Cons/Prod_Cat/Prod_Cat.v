@@ -1,6 +1,7 @@
 Require Import Essentials.Notations.
 Require Import Essentials.Types.
 Require Import Essentials.Facts_Tactics.
+Require Import Essentials.HoTT_Facts.
 Require Import Category.Main.
 Require Import Functor.Main.
 Require Import Cat.Cat.
@@ -60,6 +61,13 @@ Next Obligation.
   rewrite id_unit_right.
   trivial.
 Defined.
+
+Next Obligation.
+Proof.
+  intros C C' a b.
+  apply Prod_Trunc; apply Hom_HSet.
+Defined.
+
 
 Notation "C × D" := (Prod_Cat C D) : category_scope.
 

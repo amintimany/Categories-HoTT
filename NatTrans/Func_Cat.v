@@ -23,11 +23,13 @@ Program Definition Func_Cat (C C' : Category) : Category :=
 
   assoc := fun _ _ _ _ _ _ _ => @NatTrans_compose_assoc _ _ _ _ _ _ _ _ _;
              
-  assoc_sym := fun _ _ _ _ _ _ _ => eq_sym (@NatTrans_compose_assoc _ _ _ _ _ _ _ _ _);
+  assoc_sym := fun _ _ _ _ _ _ _ => inverse (@NatTrans_compose_assoc _ _ _ _ _ _ _ _ _);
 
   id_unit_right := @NatTrans_id_unit_right _ _;
   
-  id_unit_left := @NatTrans_id_unit_left _ _
+  id_unit_left := @NatTrans_id_unit_left _ _;
+  
+  Hom_HSet := NatTrans_HSet                                       
 |}.
 
 Section Opposite_Func_Cat.
@@ -50,12 +52,13 @@ Section Opposite_Func_Cat.
       F_id := fun F => NatTrans_id_Op F;
       F_compose := fun _ _ _ N N' => NatTrans_compose_Op N N'
     |}.
-  
+
+(*
   (** The opposite of the category of functors from C to D is naturally isomorphic to the category of functors from C^op to D^op. *)
   Program Definition Func_Cat_Op_Iso : (((Func_Cat C D)^op)%category ≃≃ (Func_Cat (C^op) (D^op)) ::> Cat) %isomorphism :=
     {|
       iso_morphism := Op_Func_Cat_to_Func_Cat_Op;
       inverse_morphism := Func_Cat_Op_to_Op_Func_Cat
     |}.
-
+*)
 End Opposite_Func_Cat.

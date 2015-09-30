@@ -5,6 +5,7 @@ Require Import Category.Main.
 Require Import Category.Composable_Chain.
 Require Import Functor.Functor.
 
+(*
 
 (** The image of a functor is not simply the image of its object and arrow maps as
 those may not form a category. Consider the following example.
@@ -74,9 +75,9 @@ Section Functor_Image.
                                      ∃ (c d : Obj) (h : c –≻ d)
                                        (Fca : (F _o c)%object = x) (Fdb : (F _o d)%object = y),
                                        match Fca in (_ = Z) return Z –≻ _ with
-                                         eq_refl =>
+                                         idpath =>
                                          match Fdb in (_ = Y) return _ –≻ Y with
-                                           eq_refl => (F _a h)%morphism
+                                           idpath => (F _a h)%morphism
                                          end
                                        end = g)
                 )
@@ -114,3 +115,4 @@ Section Functor_Image.
   Qed.
 
 End Functor_Image.
+*)

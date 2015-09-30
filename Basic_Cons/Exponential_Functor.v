@@ -23,7 +23,7 @@ Program Definition Exp_Func {C : Category}
 
 Next Obligation. (* F_id *)
 Proof.
-  program_simpl.
+  basic_simpl.
   eapply Exp_morph_unique.
   rewrite <- Exp_morph_com.
   reflexivity.

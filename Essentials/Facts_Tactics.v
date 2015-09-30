@@ -2,9 +2,6 @@ Require Import Essentials.Notations.
 Require Import Essentials.Types.
 
 Require Export Coq.Program.Tactics.
-(*Require Export Coq.Program.Equality.*)
-(*Require Export Coq.Logic.FunctionalExtensionality.*)
-(*Require Export Coq.Logic.ProofIrrelevance.*)
 
 Require Export HoTT.Basics.Overture.
 
@@ -35,18 +32,24 @@ Ltac basic_simpl :=
 
 Global Obligation Tactic := basic_simpl; auto.
 
-Definition f_equal {A B : Type} (f : A → B) {x y : A} (H : x = y) : f x = f y.
-Proof.
-  destruct H.
-  trivial.
-Defined.
+Definition f_equal {A B : Type} (f : A → B) {x y : A} (H : x = y) : f x = f y
+  :=
+    match H in _ = u return
+          _ = f u
+    with
+      idpath => idpath
+    end
+.
 
-Definition equal_f {A B : Type} {f g : A → B} (H : f = g) : ∀ x : A, f x = g x.
-Proof.
-  intros x.
-  destruct H.
-  trivial.
-Defined.
+Definition equal_f {A B : Type} {f g : A → B} (H : f = g) : ∀ x : A, f x = g x
+  :=
+    fun x =>
+      match H in _ = u return
+            _ = u x
+      with
+        idpath => idpath
+      end
+.
 
 (** A tactic to apply proof irrelevance on all proofs of the same type in the context. *)
 (*
@@ -66,7 +69,7 @@ Ltac PIR :=
 (** A tactic to eliminate equalities in the context. *)
 Ltac ElimEq := repeat match goal with [H : _ = _|- _] => destruct H end.
 
-(*Hint Extern 1 => progress ElimEq. *)
+Hint Extern 1 => progress ElimEq.
 
 (** A tactic to simplify terms before rewriting them. *)
 
@@ -144,11 +147,21 @@ Hint Extern 1 => FunExt.
 Lemma pair_eq (A B : Type) (a b : A * B) : fst a = fst b → snd a = snd b → a = b.
 Proof.
   intros H1 H2.
-  destruct a; destruct b.  
-  cbn in *.
-  repeat match goal with [H : _ = _|-_] => destruct H end.
-  trivial.
-Qed.
+  refine
+    (
+      match H1 in _ = y return
+            _ = (y, _)
+      with
+        idpath =>
+        match H2 in _ = z return
+              _ = (_, z)
+        with
+          idpath => idpath
+        end
+      end
+    )
+  .
+Defined.  
 
 Hint Resolve pair_eq. 
 

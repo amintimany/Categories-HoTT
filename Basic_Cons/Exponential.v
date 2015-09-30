@@ -81,8 +81,8 @@ Proof.
       [|- (_ ∘ ?M)%morphism = _] =>
       match M with
         (?U _a (?A ∘ ?B, ?C))%morphism =>
-        cutrewrite (M = (U @_a (_, _) (_, _) (A, C)) ∘ (U @_a (_, _) (_, _) (B, C)))%morphism;
-          [|simpl_ids; rewrite <- F_compose; simpl; simpl_ids; trivial]
+        cut (M = (U @_a (_, _) (_, _) (A, C)) ∘ (U @_a (_, _) (_, _) (B, C)))%morphism;
+          [intros H; rewrite H|simpl_ids; rewrite <- F_compose; simpl; simpl_ids; trivial]
       end
   end;
   rewrite <- assoc;
@@ -168,15 +168,17 @@ the definition of Exponential above. *)
           [|- ((_ ∘ (_ _a) ?M) ∘ _)%morphism = _] =>
           match M with
               ((?N ∘ ?x)%morphism, id ?y) =>
-              replace M with
-              (compose (_ × _) (_, _) (_, _) (_, _) (x, id y) (N,id y)) by (cbn; auto)
+              assert
+                (H :
+                   M = (compose (_ × _) (_, _) (_, _) (_, _) (x, id y) (N,id y))) by (cbn; auto);
+                 rewrite H; clear H
           end
       end.
       rewrite F_compose.
       cbn; simpl_ids.
       rewrite assoc_sym.
       match goal with
-          [|- (?A ∘ ?B = ?C ∘ ?B)%morphism] => cutrewrite (A = C); trivial
+          [|- (?A ∘ ?B = ?C ∘ ?B)%morphism] => assert (H : A = C);[|rewrite H; trivial]
       end.
       transitivity (uncurry (curry f)); [unfold curry, uncurry; cbn; auto|apply uncurry_curry].
     Qed.      

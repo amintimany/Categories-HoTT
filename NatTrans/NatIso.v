@@ -121,6 +121,7 @@ Section Embedding_mono.
 
     Next Obligation.
     Proof.
+      intros.
       symmetry.
       apply Embedding_mono_NT_obligation_1.
     Qed.

@@ -1,6 +1,7 @@
 Require Import Essentials.Notations.
 Require Import Essentials.Types.
 Require Import Essentials.Facts_Tactics.
+Require Import Essentials.HoTT_Facts.
 Require Import Category.Main.
 Require Import Functor.Functor.
 Require Import Cat.Cat.
@@ -12,51 +13,53 @@ Require Import Coq_Cats.Type_Cat.Type_Cat.
 Definition EmptyCat : Category :=
   {|
     Obj := (Empty : Type);
-    Hom := fun _ _ => (unit : Type);
+    Hom := fun _ _ => (Unit : Type);
     compose := fun _ _ _ _ _ => tt;
-    assoc := fun _ _ _ _ _ _ _ => eq_refl;
-    assoc_sym := fun _ _ _ _ _ _ _ => eq_refl;
+    assoc := fun _ _ _ _ _ _ _ => idpath;
+    assoc_sym := fun _ _ _ _ _ _ _ => idpath;
     id := fun _ => tt;
     id_unit_left :=
       fun _ _ h =>
         match h as u return (tt = u) with
-        | tt => eq_refl
+        | tt => idpath
         end;
     id_unit_right :=
       fun _ _ h =>
         match h as u return (tt = u) with
-        | tt => eq_refl
-        end
+        | tt => idpath
+        end;
+    Hom_HSet := fun x _ => match x with end
   |}.
 
 (** The singleton category – terminal object of Cat. *)
-Definition SingletonCat : Category :=
+Program Definition SingletonCat : Category :=
   {|
-    Obj := (unit : Type);
-    Hom := fun _ _ => (unit : Type);
+    Obj := (Unit : Type);
+    Hom := fun _ _ => (Unit : Type);
     compose := fun _ _ _ _ _ => tt;
-    assoc := fun _ _ _ _ _ _ _ => eq_refl;
-    assoc_sym := fun _ _ _ _ _ _ _ => eq_refl;
+    assoc := fun _ _ _ _ _ _ _ => idpath;
+    assoc_sym := fun _ _ _ _ _ _ _ => idpath;
     id := fun _ => tt;
     id_unit_left :=
       fun _ _ h =>
         match h as u return (tt = u) with
-        | tt => eq_refl
+        | tt => idpath
         end;
     id_unit_right :=
       fun _ _ h =>
         match h as u return (tt = u) with
-        | tt => eq_refl
-        end
+        | tt => idpath
+        end;
+    Hom_HSet := fun _ _ h h' => @trunc_contr _ _ (istrunc_trunctype_type HUnit h h')
   |}.
-
+  
   
 Notation "0" := (EmptyCat) : category_scope.
 Notation "1" := (SingletonCat) : category_scope.
 
 (* discrete categories in general *)
 Section Discr.
-  Context (obj : Type).
+  Context (obj : hSet).
 
   (** Discrete category – one in which has no arrow but identitities. 
 Note that this definition is not necessarily a discrete cat in Coq as UIP is not
@@ -66,16 +69,19 @@ In HoTT terms, we assume obj to be a HSet. *)
     {|
       Obj := obj;
       Hom := fun a b => a = b;
-      compose := @eq_trans _;
-      id := fun a => eq_refl
+      compose := @concat _;
+      id := fun a => idpath
     |}.
     
 End Discr.
 
-Definition Type_n (n : nat) : Type := {x : nat| x < n}.
+(*
+Definition Type_n (n : nat) : Type := {x : nat | Tle x n}.
 
 Notation "'Discr_n' n" := (Discr_Cat (Type_n n)) (at level 200, n bigint) : category_scope.
+*)
 
+(*
 (** Any discrete category is ismorphic to its dual. *)
 Section Discr_Cat_Dual_Iso.
   Context (obj : Type).
@@ -91,10 +97,11 @@ Section Discr_Cat_Dual_Iso.
       |}.
 
 End Discr_Cat_Dual_Iso.
-
+ *)
+(*
 (** Any two isomorphic types form isomorphic discrete categories. *)
 Section Discr_Cat_Iso.
-  Context {obj obj' : Type} (I : (obj ≃≃ obj' ::> Type_Cat)%isomorphism).
+  Context {obj obj' : Type} (I : (obj <~> obj' ::> Type_Cat)%isomorphism).
 
   Program Definition Discr_Cat_Iso :
     ((Discr_Cat obj) ≃≃ (Discr_Cat obj') ::> Cat)%isomorphism
@@ -157,7 +164,7 @@ Section Discr_Cat_Iso.
   Qed.
   
 End Discr_Cat_Iso.
-
+*)
 (* Functor from SingletonCat to another category. *)
 Section Func_From_SingletonCat.
   Context {C : Category} (Cobj : C).
@@ -173,7 +180,7 @@ End Func_From_SingletonCat.
 
 (* Discrete Functor *)
 Section Discr_Func.
-  Context {C : Category} {A : Type} (Omap : A → C).
+  Context {C : Category} {A : hSet} (Omap : A → C).
 
   (** The discrete functor – a functor from a discrete category of type A
  to a category C based on a function from A to objects of C. *)
@@ -183,7 +190,7 @@ Section Discr_Func.
       
       FA := fun (a b : A) (h : a = b) =>
               match h in _ = y return ((Omap a) –≻ (Omap y))%morphism with
-              | eq_refl => id
+              | idpath => id
               end
     |}.
 
@@ -194,7 +201,7 @@ discrete category of type A to a category C based on a function from A to object
       FO := Omap;
       FA := fun (a b : A) (h : b = a) =>
               match h in _ = y return ((Omap y) –≻ (Omap b))%morphism with
-              | eq_refl => id
+              | idpath => id
               end
     |}.
     

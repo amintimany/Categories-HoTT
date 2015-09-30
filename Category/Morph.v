@@ -85,11 +85,10 @@ Proof.
   intros H1 H2.
   destruct I as [iI inI Il Ir]; destruct I' as [iI' inI' Il' Ir'].
   cbn in *.
-  destruct H1; destruct H2.
-  destruct (@center _ (Hom_HSet _ _ _ _ Il Il')).
-  destruct (@center _ (Hom_HSet _ _ _ _ Ir Ir')).
+  ElimEq.
+  doHomPIR.
   trivial.  
-Qed.  
+Qed.
 
 (** Isomorphism is an equivalence relation on objects. *)
 

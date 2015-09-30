@@ -22,7 +22,7 @@ A forall quantifier ofr arrows on a composable chain. Forall ch P is provable if
 Fixpoint Forall_Links {C : Category} {a b : C} (ch : Composable_Chain C a b) (P : ∀ {x y : Obj}, (x –≻ y) → Prop) : Prop :=
   match ch with
     | Single f => P f
-    | Chain f ch' => P f ∧ Forall_Links ch' (@P)
+    | Chain _ f ch' => P f ∧ Forall_Links ch' (@P)
   end.
 
 (**
@@ -31,7 +31,7 @@ Computes the composition of a composable chain.
 Fixpoint Compose_of {C : Category} {a b : C} (ch : Composable_Chain C a b) {struct ch} : a –≻ b :=
   match ch with
     | Single f => f
-    | Chain f ch' => (Compose_of ch') ∘ f
+    | Chain _ f ch' => (Compose_of ch') ∘ f
   end.
 
 (**
@@ -40,7 +40,7 @@ Composes two composable chains (chain-composition).
 Fixpoint Chain_Compose {C : Category} {a b c : C} (ch1 : Composable_Chain C a b) (ch2 : Composable_Chain C b c) : Composable_Chain C a c :=
   match ch1 with
     | Single f => Chain f ch2
-    | Chain f ch' => Chain f (Chain_Compose ch' ch2)
+    | Chain _ f ch' => Chain f (Chain_Compose ch' ch2)
   end.
 
 (**
