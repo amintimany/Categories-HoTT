@@ -5,9 +5,8 @@ Global Set Universe Polymorphism.
 Require Import HoTT.Basics.Overture.
 Require Import HoTT.Basics.Trunc.
 
-Definition HUnit : hProp.
+Instance Unit_HProp : IsHProp Unit.
 Proof.
-  apply (@BuildTruncType -1 Unit).
   intros x y.
   refine (@BuildContr _ _ _).
   destruct x; destruct y; trivial.
@@ -15,6 +14,18 @@ Proof.
   destruct x.
   destruct u.
   trivial.
+Defined.
+
+Definition HUnit : hProp.
+Proof.
+  apply (@BuildTruncType -1 Unit).
+  typeclasses eauto.
+Defined.
+
+Definition HSUnit : hSet.
+Proof.
+  apply (@BuildTruncType 0 Unit).
+  typeclasses eauto.
 Defined.
 
 (** The Empty Type. *)
@@ -28,7 +39,6 @@ Qed.
 Definition Empty_HSet : IsHSet Empty.
 Proof.
   typeclasses eauto.
-  Show Proof.
 Qed.
 
   

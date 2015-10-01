@@ -1,6 +1,7 @@
 Require Import Essentials.Notations.
 Require Import Essentials.Types.
 Require Import Essentials.Facts_Tactics.
+Require Import Essentials.HoTT_Facts.
 Require Import Category.Category Category.Morph Category.Opposite.
 Require Import Ext_Cons.Arrow.
 Require Import Functor.Functor Functor.Functor_Ops Const_Func.
@@ -36,7 +37,7 @@ for x an object of B and y an object of D. Arrows of comma are commutative diagr
 
 for h : x → x' an arrow in B and h' : y → y' an arrow in G.
  
-*)
+ *)
 Section Comma.
   Context {B C D : Category} (F : (B –≻ C)%functor) (G : (D –≻ C)%functor).
 
@@ -58,15 +59,15 @@ Section Comma.
   Arguments CMH_right {_ _} _.
   Arguments CMH_com {_ _} _.
 
-  Theorem Comma_Hom_eq_simplify {a b : Comma_Obj} (h h' : Comma_Hom a b) : (@CMH_left _ _ h) = (@CMH_left _ _ h') → (@CMH_right _ _ h) = (@CMH_right _ _ h') → h = h'.
+  Theorem Comma_Hom_eq_simplify {a b : Comma_Obj} (h h' : Comma_Hom a b) : (CMH_left h) = (CMH_left h') → (CMH_right h) = (CMH_right h') → h = h'.
   Proof.
     intros H1 H2.
     destruct h; destruct h'.
     cbn in *.
     ElimEq.
-    PIR.
+    doHomPIR.
     trivial.
-  Qed.
+  Defined.
 
   Program Definition Comma_Hom_compose
           {a b c : Comma_Obj} (h : Comma_Hom a b) (h' : Comma_Hom b c) :
@@ -107,8 +108,53 @@ Section Comma.
     apply Comma_Hom_eq_simplify; cbn; auto.
   Qed.
 
-  
-  Definition Comma : Category :=
+  (** We show that Comma_Hom forms an HSet. *)
+  Section Comma_Hom_HSet.
+    
+    Theorem Comma_Hom_eq_simplify_alt
+            {a b : Comma_Obj}
+            {h h' : Comma_Hom a b}
+    :
+      (((CMH_left h) = (CMH_left h')) *
+       ((CMH_right h) = (CMH_right h')))
+      → h = h'
+    .
+    Proof.
+      intros [? ?].
+      apply Comma_Hom_eq_simplify; trivial.
+    Defined.
+    
+    Theorem Comma_Hom_eq_simplify_alt_inv
+            {a b : Comma_Obj}
+            {h h' : Comma_Hom a b}
+      :
+        h = h'
+        →
+        (((CMH_left h) = (CMH_left h')) *
+         ((CMH_right h) = (CMH_right h')))
+    .
+    Proof.
+      intros H.
+      exact (f_equal CMH_left H, f_equal CMH_right H).
+    Defined.
+
+    Theorem Comma_Hom_eq_simplify_alt_inv_left_inv
+            {a b : Comma_Obj}
+            {h h' : Comma_Hom a b}
+            (H : h = h')
+      :
+        Comma_Hom_eq_simplify_alt (Comma_Hom_eq_simplify_alt_inv H) = H
+    .
+    Proof.
+      destruct H.
+      cbn.
+      rewrite (@contr _ _ idpath).
+      trivial.
+    Qed.
+
+  End Comma_Hom_HSet.
+
+  Program Definition Comma : Category :=
     {|
       Obj := Comma_Obj;
 
@@ -118,7 +164,7 @@ Section Comma.
 
       assoc := @Comma_Hom_compose_assoc;
 
-      assoc_sym := fun _ _ _ _ f g h => eq_sym (Comma_Hom_compose_assoc f g h);
+      assoc_sym := fun _ _ _ _ f g h => inverse (Comma_Hom_compose_assoc f g h);
       
       id := Comma_Hom_id;
 
@@ -126,6 +172,35 @@ Section Comma.
 
       id_unit_left := @Comma_Hom_id_unit_left
     |}.
+
+  Local Obligation Tactic := idtac.
+  
+  Next Obligation.
+  Proof.
+    intros a b h h'.
+    assert (Hc :
+              IsHProp
+                (((CMH_left h) = (CMH_left h')) *
+                 ((CMH_right h) = (CMH_right h')))
+           )
+    .
+    {           
+      apply Prod_Trunc; refine (Hom_HSet _ _).
+    }
+    {
+      apply (
+          @left_inv_equi_trunc
+            (h = h')
+            (((CMH_left h) = (CMH_left h')) *
+             ((CMH_right h) = (CMH_right h')))
+            _
+            Hc
+            _
+            _
+            Comma_Hom_eq_simplify_alt_inv_left_inv
+        ).
+    }
+  Qed.
 
 End Comma.
 
@@ -162,7 +237,7 @@ Section Comma_Opposite_Iso.
             {|
               CMH_left := CMH_right h;
               CMH_right := CMH_left h;
-              CMH_com := eq_sym (CMH_com h)
+              CMH_com := inverse (CMH_com h)
             |}
       |}.
 
@@ -182,11 +257,11 @@ Section Comma_Opposite_Iso.
             {|
               CMH_left := CMH_right h;
               CMH_right := CMH_left h;
-              CMH_com := eq_sym (CMH_com h)
+              CMH_com := inverse (CMH_com h)
             |}
       |}.
     
-    
+(*    
   Program Definition Comma_Opposite_Iso :
     (((Comma F G)^op)%category ≃≃ Comma (G ^op) (F ^op) ::> Cat)%isomorphism
     :=
@@ -195,7 +270,7 @@ Section Comma_Opposite_Iso.
         inverse_morphism := Comma_Opposite_Iso_RL
       |}
   .
-
+*)
 End Comma_Opposite_Iso.
 
 (** In this section we show that whenever F and F' are two naturally
@@ -246,7 +321,7 @@ Section Comma_Left_Func_Iso.
     Qed.
     
   End Comma_Left_Func_Iso_FC.
-
+(*
   Section Comma_Left_Func_Iso_FC_Iso.
     Context
       {F F' : (B –≻ C)%functor}
@@ -339,9 +414,9 @@ are inverses.
         inverse_morphism := Comma_Left_Func_Iso_FC (Inverse_Isomorphism I) G
       |}
   . 
-    
+*)    
 End Comma_Left_Func_Iso.
-
+(*
 (** In this section we show that whenever G and G' are two naturally
 isomorphic functors, then (Comma F G) is isomorphic to (Comma F G').
 This follows from Comma_Left_Func_Iso and Comma_Opposite_Iso proven
@@ -367,7 +442,7 @@ Section Comma_Right_Func_Iso.
   .
     
 End Comma_Right_Func_Iso.
-
+*)
 (**
 Slice, coslice and arrow categories are special cases of comma categories defined below:
 *)

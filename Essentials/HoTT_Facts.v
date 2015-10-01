@@ -4,6 +4,7 @@ Require Import Essentials.Facts_Tactics.
 
 Require Export HoTT.Basics.Trunc.
 Require Export HoTT.Types.Forall.
+Require Export HoTT.Types.Sum.
 
 Section left_inv_equi_contr.
   Context
@@ -34,7 +35,7 @@ Section left_inv_equi_contr.
     trivial.
   Defined.
 
-  Theorem left_inv_equi_contr : Contr A.
+  Instance left_inv_equi_contr : Contr A.
   Proof.
     refine (BuildContr _ (g (@center _ Bc)) _).
     intros y.
@@ -63,7 +64,7 @@ Section left_inv_equi_trunc.
     (Hd : ∀ x, g (f x) = x)
   .
 
-  Theorem left_inv_equi_trunc : IsTrunc n A.
+  Instance left_inv_equi_trunc : IsTrunc n A.
   Proof.
     revert A B f g Bc Hd.
     induction n as [|t]; clear n.
@@ -185,7 +186,7 @@ Section HSet_then_sig_HProp_HSet.
     {P : A → hProp}
   .
   
-  Theorem HProp_then_sig_HProp_HProp : IsHProp (sig P).
+  Instance HProp_then_sig_HProp_HProp : IsHProp (sig P).
   Proof.
     intros [x Hx] [y Hy].
     cbn in *.
@@ -215,7 +216,7 @@ Section Trunc_then_sig_HProp_Trunc.
     (P : A → hProp)
   .
   
-  Theorem Trunc_then_sig_HProp_Trunc : IsTrunc n.+1 (sig P).
+  Instance Trunc_then_sig_HProp_Trunc : IsTrunc n.+1 (sig P).
   Proof.
     induction n as [|t]; clear n.
     apply HProp_then_sig_HProp_HProp.
@@ -298,7 +299,7 @@ Section Prod_Contr.
     trivial.
   Qed.
   
-  Theorem Prod_Contr : Contr (A * B).
+  Instance Prod_Contr : Contr (A * B).
   Proof.
     refine (BuildContr _ (@center _ CA, @center _ CB) _).
     intros [y1 y2].
@@ -316,7 +317,7 @@ Section Prod_Trunc.
     (HB : IsTrunc n B)
   .
     
-  Theorem Prod_Trunc : IsTrunc n (A * B).
+  Instance Prod_Trunc : IsTrunc n (A * B).
   Proof.
     revert A B HA HB.
     induction n as [|t]; clear n.

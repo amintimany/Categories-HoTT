@@ -14,10 +14,10 @@ Section Slice_Terminal.
 
   (** Notation for easier construction of objects of comma out of an arrow z : ? → c. *)
   Local Notation CA z := (Build_Comma_Obj (Functor_id C) (Const_Func 1 c) _ tt z) (only parsing).
-
+  
   (** Every slice category C/c has a terminal object (id c). *)
-  Program Instance Slice_Terminal : Terminal (Slice C c) :=
-    {
+  Program Definition Slice_Terminal : Terminal (Slice C c) :=
+    {|
       terminal := CA id;
       t_morph :=
         fun d =>
@@ -30,12 +30,12 @@ Section Slice_Terminal.
                 tt => id
               end
           |}
-    }.
+    |}.
 
   Next Obligation.
   Proof.
     apply Comma_Hom_eq_simplify.
-    set (W := eq_trans (eq_sym (CMH_com f)) (CMH_com g)); cbn in W; auto.
+    set (W := concat (inverse (CMH_com f)) (CMH_com g)); cbn in W; auto.
     match goal with [|- ?A = ?B] => destruct A; destruct B; trivial end.
   Qed.    
 
@@ -93,7 +93,7 @@ Section PullBack_Slice_Prod.
   Next Obligation.
   Proof.
     intros p r1 r2.
-    exact (eq_trans (eq_sym (CMH_com r1)) (CMH_com r2)).
+    exact (concat (inverse (CMH_com r1)) (CMH_com r2)).
   Qed.
 
   Next Obligation.
@@ -148,7 +148,7 @@ Section PullBack_Slice_Prod.
     {
       apply (pullback_morph_ex_unique PB _ (pullback_morph_1 PB ∘ CMH_left h) (pullback_morph_2 PB ∘ CMH_left h)); auto.
       repeat rewrite assoc_sym.
-      apply (f_equal (fun x => compose _ x)).
+      refine (f_equal (fun x => compose _ x) _).
       apply (pullback_morph_com PB).
     }    
     {
@@ -239,9 +239,9 @@ Section Slice_Prod_PullBack.
       cbn in W.
       repeat rewrite assoc in W.
       set (N :=
-             (eq_trans
+             (concat
                 (id_unit_left _ _ _)
-                (f_equal (fun x => compose x (CMO_hom f)) (eq_sym H1))
+                (f_equal (fun x => compose x (CMO_hom f)) (inverse H1))
              )
           ).
       cbn in N.
@@ -256,9 +256,9 @@ Section Slice_Prod_PullBack.
       cbn in W.
       repeat rewrite assoc in W.
       set (N :=
-             (eq_trans
+             (concat
                 (id_unit_left _ _ _)
-                (f_equal (fun x => compose x (CMO_hom f)) (eq_sym H1))
+                (f_equal (fun x => compose x (CMO_hom f)) (inverse H1))
              )
           ).
       cbn in N.

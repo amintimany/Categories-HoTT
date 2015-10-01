@@ -9,15 +9,17 @@ Record Card_Restriction : Type :=
 {
   Card_Rest : Type → Prop;
   
-  Card_Rest_Respect : ∀ (A B : Type), (A ≃≃ B ::> Type_Cat)%isomorphism → Card_Rest A → Card_Rest B
+  Card_Rest_Respect : ∀ (A B : Type), (A <~> B) → Card_Rest A → Card_Rest B
 }.
 
 Coercion Card_Rest : Card_Restriction >-> Funclass.
 
+(*
 (** A type is finite if it is isomorphic to a subset of natural numbers less than n for soem natural number n. *)
 Program Definition Finite : Card_Restriction :=
   {|
-    Card_Rest := fun A => inhabited {n : nat & (A ≃≃ {x : nat | x < n} ::> Type_Cat)%isomorphism}
+    Card_Rest :=
+      fun A => inhabited {n : nat & (A ≃≃ {x : nat | x < n} ::> Type_Cat)%isomorphism}
   |}.
 
 Next Obligation.
@@ -26,3 +28,4 @@ Proof.
   eexists.
   refine (existT _ n (I ∘ (X⁻¹)%isomorphism)%isomorphism).
 Qed.
+*)
