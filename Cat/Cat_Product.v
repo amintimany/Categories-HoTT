@@ -9,30 +9,33 @@ Require Import Basic_Cons.Product.
 
 (** Product in category of categories is imply the product of actegories *)
 
-Program Definition Cat_Products (C C' : Category) : @Product Cat C C' :=
-{|
-  product := (C × C')%category;
+Definition Cat_Prod (C C' : Cat) : Cat := ((C.1 × C'.1)%category; Prod_Cat_HSet _ _ (C.2) (C'.2)).
 
-  Pi_1 := Cat_Proj1 C C';
-
-  Pi_2 := Cat_Proj2 C C';
-
-  Prod_morph_ex := fun P => fun F G =>  Functor_compose (Diag_Func P) (Prod_Functor F G)
-|}.
-
-Local Obligation Tactic := idtac.
-
-Next Obligation. (* Prod_morph_unique *)
+Definition Cat_Products (C C' : Cat) : @Product Cat C C'.
 Proof.
-  intros C C' p' r1 r2 f g H1 H2 H3 H4.
+  refine
+    (
+      Build_Product
+        Cat
+        C
+        C'
+        (Cat_Prod C C')
+        (Cat_Proj1 C.1 C'.1)
+        (Cat_Proj2 C.1 C'.1)
+        (fun P => fun F G =>  Functor_compose (Diag_Func P.1) (Prod_Functor F G))
+        _
+        _
+        _
+    ); cbn; auto.
+  intros p' r1 r2 f g H1 H2 H3 H4.
   cbn in *.
-  transitivity (Functor_compose (Diag_Func p') (Prod_Functor r1 r2)).
+  transitivity (Functor_compose (Diag_Func p'.1) (Prod_Functor r1 r2)).
   + symmetry.
     rewrite <- H1, <- H2.
     apply Prod_Functor_Cat_Proj.
   + rewrite <- H3, <- H4.
     apply Prod_Functor_Cat_Proj.
-Qed.
+Defined.
 
 (* Cat_Products defined *)
 

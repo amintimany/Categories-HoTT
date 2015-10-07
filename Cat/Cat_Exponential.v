@@ -15,7 +15,7 @@ Require Import Cat.Cat_Product.
 Local Open Scope functor_scope. 
 
 (** Evaluation functor. *)
-Program Definition Exp_Cat_Eval (C C' : Category) : ((Func_Cat C C') × C) –≻ C' :=
+Program Definition Exp_Cat_Eval (C C' : Cat) : ((Func_Cat C.1 C'.1) × C.1) –≻ C'.1 :=
 {|
   FO := fun x => ((fst x) _o (snd x))%object;
   FA := fun A B f => (((fst B) _a (snd f)) ∘ (@Trans _ _ _ _ (fst f) _))%morphism
@@ -26,26 +26,36 @@ Proof.
   repeat rewrite F_compose.
   repeat rewrite assoc.
   match goal with
-      [|- (?A ∘ ?B = ?A ∘ ?C)%morphism] => cutrewrite (B = C); trivial
+      [|- (?A ∘ ?B = ?A ∘ ?C)%morphism] => cut (B = C); [intros H; rewrite H; clear H|]; trivial
   end.
   repeat rewrite assoc_sym.
   match goal with
-      [|- (?A ∘ ?B = ?C ∘ ?B)%morphism] => cutrewrite (A = C); trivial
+      [|- (?A ∘ ?B = ?C ∘ ?B)%morphism] => cut (A = C); [intros H; rewrite H; clear H|]; trivial
   end.
   rewrite Trans_com; trivial.
-Qed.
+Defined.
 
 (* Exp_Cat_Eval defined *)
 
 (** The arrow map of curry functor. *)
-Program Definition Exp_Cat_morph_ex_A
-        {C C' C'' : Category} (F : (C'' × C) –≻  C')
-        (a b : C'') (h : (a –≻ b)%morphism)
+Definition Exp_Cat_morph_ex_A
+        {C C' C'' : Cat} (F : (C''.1 × C.1) –≻  C'.1)
+        (a b : C''.1) (h : (a –≻ b)%morphism)
   :
-    ((Fix_Bi_Func_1 a F) –≻ (Fix_Bi_Func_1 b F))%nattrans :=
-{|
-  Trans := fun c => (F _a (h, id _ c))%morphism
-|}.
+    ((Fix_Bi_Func_1 a F) –≻ (Fix_Bi_Func_1 b F))%nattrans.
+Proof.
+  refine
+    (
+      @Build_NatTrans
+        _
+        _
+        (Fix_Bi_Func_1 a F)
+        (Fix_Bi_Func_1 b F)
+        (fun c => (F @_a (_, _) (_, _) (h, id c))%morphism)
+        _
+        _
+    ); cbn; auto.
+Defined.
 
 (* Exp_Cat_morph_ex_A defined *)
 
@@ -53,10 +63,10 @@ Local Hint Extern 1 => apply NatTrans_eq_simplify; cbn.
 
 (** The curry functor. *)
 Program Definition Exp_Cat_morph_ex
-        {C C' C'' : Category}
-        (F : (C'' × C) –≻ C')
+        {C C' C'' : Cat}
+        (F : (C''.1 × C.1) –≻ C'.1)
   :
-    C'' –≻ (Func_Cat C C') :=
+    C''.1 –≻ (Func_Cat C.1 C'.1) :=
 {|
   FO := fun a => Fix_Bi_Func_1 a F;
   FA := Exp_Cat_morph_ex_A F
@@ -64,14 +74,15 @@ Program Definition Exp_Cat_morph_ex
 
 (** Proof that currying after uncurrying gives back the same functor. *)
 Lemma Exp_cat_morph_ex_eval_id
-      {C C' C'' : Category}
-      (u : C'' –≻ (Func_Cat C C'))
+      {C C' C'' : Cat}
+      (u : C''.1 –≻ (Func_Cat C.1 C'.1))
   :
     (u =
      Exp_Cat_morph_ex
-       (
-         (Exp_Cat_Eval C C') ∘ ((Prod_Func _ Cat_Has_Products) @_a (_, _) (_, _) (u, id Cat C))
-       )
+       (Exp_Cat_Eval C C'
+                     ∘ Prod_Functor (u ∘ Cat_Proj1 C''.1 C.1)
+                     (Functor_id C.1 ∘ Cat_Proj2 C''.1 C.1) ∘ 
+                     Diag_Func (C''.1 × C.1))
     )%morphism.
 Proof.
   Func_eq_simpl.
@@ -79,44 +90,69 @@ Proof.
     extensionality a; extensionality b; extensionality h; cbn.
     apply NatTrans_eq_simplify.
     extensionality m.
-    apply JMeq_eq.
-    apply (@JMeq_trans _ _ _ _ (Trans (u _a h)%morphism m)).
-    + match goal with [H : _ = _ |-_] => destruct H end; trivial.
-    + cbn; auto.
+    transitivity
+      (
+        (
+          match f_equal (fun w => ((w a) _o m)%object) H in _ = V return (V –≻ _)%morphism with
+            idpath =>
+            match f_equal (fun w => (w b) _o m)%object H in _ = U return (_ –≻ U)%morphism with
+              idpath => Trans (u _a h)%morphism m
+            end
+          end
+        )
+      ).
+    {
+      destruct H; trivial.
+    }      
+    {
+      match goal with
+        [|- match ?X with idpath => match ?Y with idpath => _ end end = _] =>
+        generalize X as H1;
+          generalize Y as H2
+      end.
+      intros H1 H2.
+      cbn in *.
+      rewrite ( @center _ ((C'.2) _ _ H1 idpath)).
+      rewrite ( @center _ ((C'.2) _ _ H2 idpath)).
+      auto.
+    }
   }
   {
     FunExt; cbn.
-    Func_eq_simpl; FunExt; cbn.
-    auto.
+    Func_eq_simpl; cbn; auto.
   }
 Qed.
 
 (** The exponential for category of categories (functor categories). *)
-Program Definition Cat_Exponential (C C' : Category) : @Exponential Cat _ C C' :=
-{|
-  exponential := Func_Cat C C';
-
-  eval := Exp_Cat_Eval C C';
-  
-  Exp_morph_ex := fun C'' F => @Exp_Cat_morph_ex C C' C'' F
-|}.
-
-Next Obligation. (* Exp_morph_com *)
+Definition Cat_Exponential (C C' : Cat) : @Exponential Cat _ C C'.
 Proof.
-  Func_eq_simpl.
-  FunExt; cbn.
-  rewrite <- F_compose; cbn.
-  auto.
-Qed.
-
-Local Obligation Tactic := idtac.
-
-Next Obligation. (* Exp_morph_unique *)
-Proof.  
-  intros C C' z f u u' H1 H2.
-  rewrite H1 in H2; clear H1.
-  assert (H3 := @f_equal _ _ Exp_Cat_morph_ex _ _ H2).
-  repeat rewrite <- Exp_cat_morph_ex_eval_id in H3; trivial.
+  refine
+    (
+      @Build_Exponential
+        Cat
+        _
+        C
+        C'
+        (Func_Cat C.1 C'.1; @CoDom_Cat_HSet_Functor_HSet (C.1) (C'.1) (C'.2))
+        (Exp_Cat_Eval C C')
+        (fun C'' F => @Exp_Cat_morph_ex C C' C'' F)
+        _
+        _
+    ); cbn.
+  {
+    intros z f.
+    Func_eq_simpl.
+    FunExt; cbn.
+    rewrite <- F_compose; cbn.
+    auto.
+  }
+  {
+    intros z f u u' H1 H2.
+    rewrite H1 in H2; clear H1.
+    assert (H3 := @f_equal _ _ Exp_Cat_morph_ex _ _ H2); clear H2.
+    cbn in *.
+    repeat rewrite <- Exp_cat_morph_ex_eval_id in H3; trivial.
+  }
 Qed.
 
 (* Cat_Exponentials defined *)

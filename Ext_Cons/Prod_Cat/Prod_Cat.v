@@ -121,3 +121,13 @@ Program Definition Cat_Proj2
   :=
     {|FO := snd; FA := fun _ _ f => snd f|}
 .
+
+Instance Prod_Cat_HSet
+        (C C' : Category)
+        (HC : IsHSet C)
+        (HC' : IsHSet C'):
+  IsHSet (C × C')%category
+.
+Proof.
+  apply Prod_Trunc; trivial.
+Defined.
