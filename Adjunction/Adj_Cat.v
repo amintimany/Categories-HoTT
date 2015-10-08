@@ -1,10 +1,13 @@
 Require Import Essentials.Notations.
 Require Import Essentials.Types.
 Require Import Essentials.Facts_Tactics.
+Require Import Essentials.HoTT_Facts.
 Require Import Category.Main.
 Require Import Functor.Main.
 Require Import Adjunction.Adjunction Adjunction.Duality.
 Require Import NatTrans.NatTrans.
+
+Require Import HoTT.Types.Sigma.
 
 Local Open Scope functor_scope.
 (** Adjunctions form a category Adj where objects are categories and an arrow from C to D is a pari of adjoint funtors F : C → D : G. *)
@@ -66,7 +69,7 @@ Section Adjunct_Compose.
     cbn in W.
     match type of W with
       ?A = ?B =>
-      apply (@adj_morph_unique _ _ _ _ adj' _ _ A _ _ eq_refl W)
+      apply (@adj_morph_unique _ _ _ _ adj' _ _ A _ _ idpath W)
     end.
   Qed.
 
@@ -80,9 +83,9 @@ Section Adjunct_Compose_assoc.
   
   Theorem Adjunct_Compose_assoc :
     match (Functor_assoc F F' F'') in _ = Y return Adjunct Y _ with
-      eq_refl =>
-      match eq_sym (Functor_assoc G'' G' G) in _ = Y return Adjunct _ Y with
-        eq_refl =>
+      idpath =>
+      match inverse (Functor_assoc G'' G' G) in _ = Y return Adjunct _ Y with
+        idpath =>
         Adjunct_Compose adj (Adjunct_Compose adj' adj'')
       end
     end
@@ -92,21 +95,79 @@ Section Adjunct_Compose_assoc.
     {
       apply NatTrans_eq_simplify.
       extensionality x.
-      apply JMeq_eq.
-      destruct (Functor_assoc F F' F'').
-      destruct (eq_sym (Functor_assoc G'' G' G)).
-      cbn.
-      rewrite F_compose.
-      repeat rewrite assoc_sym.
-      trivial.
+      transitivity
+        (
+          match equal_f (f_equal FO (Functor_assoc F F' F'')) x in (_ = Y) return
+                (_ –≻ (_ _o Y))%object%morphism
+          with
+          | idpath =>
+            match equal_f (f_equal FO (inverse (Functor_assoc G'' G' G))) (F'' _o (F' _o (F _o x)))%object in (_ = Y) return
+                  (_ –≻ Y)%object%morphism
+            with
+            | idpath => Trans (adj_unit (Adjunct_Compose adj (Adjunct_Compose adj' adj''))) x
+            end
+          end
+        )
+      .
+      {
+        generalize (Functor_assoc F F' F'') as H1.
+        generalize (inverse (Functor_assoc G'' G' G)) as H2.
+        intros H2 H1.
+        destruct H1.
+        destruct H2.
+        trivial.
+      }
+      {
+        rewrite f_equal_inverse.
+        unfold Functor_assoc.
+        repeat rewrite f_equal_Functor_eq_simplify_Oeq.
+        cbn.
+        rewrite F_compose.
+        auto.
+      }
     }
     {
       extensionality x.
       extensionality y.
-      apply JMeq_eq.
-      destruct (Functor_assoc F F' F'').
-      destruct (eq_sym (Functor_assoc G'' G' G)).
-      trivial.
+      extensionality h.      
+      transitivity
+        (
+          match equal_f (f_equal FO (Functor_assoc F F' F'')) x in (_ = Y) return
+                (_ → (Y –≻ _))%morphism
+          with
+          | idpath =>
+            match equal_f (f_equal FO (inverse (Functor_assoc G'' G' G))) y in (_ = Y) return
+                  ((_ –≻ Y) → _)%object%morphism
+            with
+              idpath =>
+              @adj_morph_ex
+                _
+                _
+                _
+                _
+                (Adjunct_Compose adj (Adjunct_Compose adj' adj''))
+                x
+                y
+            end
+          end
+            h
+        )
+      .
+      {
+        generalize (Functor_assoc F F' F'') as H1.
+        generalize (inverse (Functor_assoc G'' G' G)) as H2.
+        intros H2 H1.
+        destruct H1.
+        destruct H2.
+        trivial.
+      }
+      {
+        rewrite f_equal_inverse.
+        unfold Functor_assoc.
+        repeat rewrite f_equal_Functor_eq_simplify_Oeq.
+        cbn.
+        trivial.
+      }
     }
   Qed.
 
@@ -117,10 +178,10 @@ Section Adjunct_Id_unit_left.
           {F : B –≻ C} {G : C –≻ B} (adj : F ⊣ G).
   
   Theorem Adjunct_Id_unit_left :
-    match (Functor_id_unit_left _ _ F) in _ = Y return Adjunct Y _ with
-      eq_refl =>
-      match (Functor_id_unit_right _ _ G) in _ = Y return Adjunct _ Y with
-        eq_refl =>
+    match (Functor_id_unit_left _ _ F) in _ = Y return Y ⊣ _ with
+      idpath =>
+      match (Functor_id_unit_right _ _ G) in _ = Y return _ ⊣ Y with
+        idpath =>
         Adjunct_Compose adj (Adjunct_Id C)
       end
     end 
@@ -130,19 +191,77 @@ Section Adjunct_Id_unit_left.
     {
       apply NatTrans_eq_simplify.
       extensionality x.
-      apply JMeq_eq.
-      destruct (Functor_id_unit_left _ _ F).
-      destruct (Functor_id_unit_right _ _ G).
-      cbn.
-      auto.
+      transitivity
+        (
+          match equal_f (f_equal FO (Functor_id_unit_left B C F)) x in (_ = Y) return
+                (_ –≻ (_ _o Y))%object%morphism
+          with
+          | idpath =>
+            match equal_f (f_equal FO (Functor_id_unit_right C B G)) (F _o x)%object in (_ = Y) return
+                  (_ –≻ Y)%object%morphism
+            with
+            | idpath => Trans (adj_unit (Adjunct_Compose adj (Adjunct_Id C))) x
+            end
+          end
+        )
+      .
+      {
+        generalize (Functor_id_unit_left B C F) as H1.
+        generalize (Functor_id_unit_right C B G) as H2.
+        intros H2 H1.
+        destruct H1.
+        destruct H2.
+        trivial.
+      }
+      {
+        unfold Functor_id_unit_right, Functor_id_unit_left.
+        repeat rewrite f_equal_Functor_eq_simplify_Oeq.
+        cbn.
+        auto.
+      }
     }
     {
       extensionality x.
       extensionality y.
-      apply JMeq_eq.
-      destruct (Functor_id_unit_left _ _ F).
-      destruct (Functor_id_unit_right _ _ G).
-      trivial.
+      extensionality h.      
+      transitivity
+        (
+          match equal_f (f_equal FO (Functor_id_unit_left B C F)) x in (_ = Y) return
+                (_ → (Y –≻ _))%morphism
+          with
+          | idpath =>
+            match equal_f (f_equal FO (Functor_id_unit_right C B G)) y in (_ = Y) return
+                  ((_ –≻ Y) → _)%object%morphism
+            with
+              idpath =>
+              @adj_morph_ex
+                _
+                _
+                _
+                _
+                (Adjunct_Compose adj (Adjunct_Id C))
+                x
+                y
+            end
+          end
+            h
+        )
+      .
+      {
+        generalize (Functor_id_unit_left B C F) as H1.
+        generalize (Functor_id_unit_right C B G) as H2.
+        intros H2 H1.
+        destruct H1.
+        revert G H2 adj h.
+        destruct H2.
+        trivial.
+      }
+      {
+        unfold Functor_id_unit_right, Functor_id_unit_left.
+        repeat rewrite f_equal_Functor_eq_simplify_Oeq.
+        cbn.
+        auto.
+      }
     }
   Qed.
 
@@ -153,34 +272,92 @@ Section Adjunct_Id_unit_right.
           {F : B –≻ C} {G : C –≻ B} (adj : F ⊣ G).
   
   Theorem Adjunct_Id_unit_right :
-    match (Functor_id_unit_right _ _ F) in _ = Y return Adjunct Y _ with
-      eq_refl =>
-      match (Functor_id_unit_left _ _ G) in _ = Y return Adjunct _ Y with
-        eq_refl =>
+    match (Functor_id_unit_right _ _ F) in _ = Y return Y ⊣ G with
+      idpath =>
+      match (Functor_id_unit_left _ _ G) in _ = V return F ∘ Functor_id B ⊣ V with
+        idpath =>
         Adjunct_Compose (Adjunct_Id B) adj
       end
-    end 
+    end
     = adj.
   Proof.
     apply Adjunct_eq_simplify.
     {
       apply NatTrans_eq_simplify.
       extensionality x.
-      apply JMeq_eq.
-      destruct (Functor_id_unit_right _ _ F).
-      destruct (Functor_id_unit_left _ _ G).
-      cbn.
-      auto.
+      transitivity
+        (
+          match equal_f (f_equal FO (Functor_id_unit_right B C F)) x in (_ = Y) return
+                (_ –≻ (_ _o Y))%object%morphism
+          with
+          | idpath =>
+            match equal_f (f_equal FO (Functor_id_unit_left C B G)) (F _o x)%object in (_ = Y) return
+                  (_ –≻ Y)%object%morphism
+            with
+            | idpath => Trans (adj_unit (Adjunct_Compose adj (Adjunct_Id C))) x
+            end
+          end
+        )
+      .
+      {
+        generalize (Functor_id_unit_right B C F) as H1.
+        generalize (Functor_id_unit_left C B G) as H2.
+        intros H2 H1.
+        destruct H1.
+        destruct H2.
+        cbn; auto.
+      }
+      {
+        unfold Functor_id_unit_right, Functor_id_unit_left.
+        repeat rewrite f_equal_Functor_eq_simplify_Oeq.
+        cbn.
+        auto.
+      }
     }
     {
       extensionality x.
       extensionality y.
-      apply JMeq_eq.
-      destruct (Functor_id_unit_right _ _ F).
-      destruct (Functor_id_unit_left _ _ G).
-      trivial.
+      extensionality h.      
+      transitivity
+        (
+          match equal_f (f_equal FO (Functor_id_unit_right B C F)) x in (_ = Y) return
+                (_ → (Y –≻ _))%morphism
+          with
+          | idpath =>
+            match equal_f (f_equal FO (Functor_id_unit_left C B G)) y in (_ = Y) return
+                  ((_ –≻ Y) → _)%object%morphism
+            with
+              idpath =>
+              @adj_morph_ex
+                _
+                _
+                _
+                _
+                (Adjunct_Compose adj (Adjunct_Id C))
+                x
+                y
+            end
+          end
+            h
+        )
+      .
+      {
+        generalize (Functor_id_unit_right B C F) as H1.
+        generalize (Functor_id_unit_left C B G) as H2.
+        intros H2 H1.
+        destruct H1.
+        revert G H2 adj h.
+        destruct H2.
+        trivial.
+      }
+      {
+        unfold Functor_id_unit_right, Functor_id_unit_left.
+        repeat rewrite f_equal_Functor_eq_simplify_Oeq.
+        cbn.
+        auto.
+      }
     }
-  Qed.
+  Qed.    
 
 End Adjunct_Id_unit_right.
 
@@ -188,6 +365,15 @@ Definition Adjunct_Between (C D : Category) : Type :=
   {F : (C –≻ D) * (D –≻ C) & (fst F) ⊣ (snd F)}
 .
 
+Instance Adjunct_Between_HSet (C D : Category) (HC : IsHSet C) (HD : IsHSet D) : IsHSet (Adjunct_Between C D).
+Proof.
+  apply @trunc_sigma.
+  apply Prod_Trunc; apply CoDom_Cat_HSet_Functor_HSet; trivial.
+  intros f.
+  apply Adjunct_HSet.
+Defined.
+
+     
 Definition Adjunct_Between_Id (C : Category) : Adjunct_Between C C := existT _ (Functor_id C, Functor_id C) (Adjunct_Id C).
   
 Section Adjunct_Between_Compose.
@@ -205,7 +391,7 @@ End Adjunct_Between_Compose.
 
 Theorem sigT_eq_simplify {A : Type} {P : A → Type} (s s' : sigT P) (H : projT1 s = projT1 s') :
   match H in _ = Y return P Y with
-    eq_refl => projT2 s
+    idpath => projT2 s
   end = projT2 s' → s = s'.
 Proof.
   intros H'.
@@ -228,9 +414,12 @@ Section Adjunct_Between_Compose_assoc.
     Adjunct_Between_Compose adj (Adjunct_Between_Compose adj' adj'') =
     Adjunct_Between_Compose (Adjunct_Between_Compose adj adj') adj''.
   Proof.
-    destruct adj as [[F G] adjb]; destruct adj' as [[F' G'] adjb']; destruct adj'' as [[F'' G''] adjb''].
+    destruct adj as [[F G] adjb];
+    destruct adj' as [[F' G'] adjb'];
+    destruct adj'' as [[F'' G''] adjb''].
+    clear.
     set (W := Functor_assoc (fst (F, G)) (fst (F', G')) (fst (F'', G''))).
-    set (W' := eq_sym (Functor_assoc (snd (F'', G'')) (snd (F', G')) (snd (F, G)))).
+    set (W' := inverse (Functor_assoc (snd (F'', G'')) (snd (F', G')) (snd (F, G)))).
     match type of W with
       ?A = ?B =>
       match type of W' with
@@ -239,9 +428,9 @@ Section Adjunct_Between_Compose_assoc.
           [|- ?X = ?Z] =>
           set (H :=
                  match W in _ = Y return (A, _) = (Y, _) with
-                   eq_refl =>
+                   idpath =>
                    match W' in _ = Y return (_, A') = (_, Y) with
-                     eq_refl => eq_refl (A, A')
+                     idpath => idpath (A, A')
                    end
                  end : projT1 X = projT1 Z)
         end
@@ -250,9 +439,13 @@ Section Adjunct_Between_Compose_assoc.
     apply (sigT_eq_simplify _ _ H).
     etransitivity; [|apply Adjunct_Compose_assoc].
     unfold W, W' in H; clear W W'; unfold H; clear H.
-    cbn.
-    destruct (Functor_assoc F F' F'').
-    destruct (eq_sym (Functor_assoc G'' G' G)).
+    cbn -[Functor_assoc] in *.
+    set (W := Functor_assoc F F' F'').
+    change (Functor_assoc F F' F'') with W.
+    set (W' := inverse (Functor_assoc G'' G' G)).
+    change (inverse (Functor_assoc G'' G' G)) with W'.
+    destruct W.
+    destruct W'.
     trivial.
   Qed.
 
@@ -275,9 +468,9 @@ Section Adjunct_Between_Id_unit_left.
           [|- ?X = ?Z] =>
           set (H :=
                  match W in _ = Y return (A, _) = (Y, _) with
-                   eq_refl =>
+                   idpath =>
                    match W' in _ = Y return (_, A') = (_, Y) with
-                     eq_refl => eq_refl (A, A')
+                     idpath => idpath (A, A')
                    end
                  end : projT1 X = projT1 Z)
         end
@@ -288,9 +481,13 @@ Section Adjunct_Between_Id_unit_left.
       ?A = ?B => transitivity A; [|apply (@Adjunct_Id_unit_left _ _ _ _ adjb)]
     end.
     unfold W, W' in H; clear W W'; unfold H; clear H.
-    cbn.
-    destruct (Functor_id_unit_left _ _ F).
-    destruct (Functor_id_unit_right _ _ G).
+    cbn -[Functor_id_unit_right Functor_id_unit_left] in *.
+    set (W := Functor_id_unit_left _ _ F).
+    change (Functor_id_unit_left _ _ F) with W.
+    set (W' := Functor_id_unit_right _ _ G).
+    change (Functor_id_unit_right _ _ G) with W'.
+    destruct W.
+    destruct W'.
     trivial.
   Qed.
 
@@ -313,9 +510,9 @@ Section Adjunct_Between_Id_unit_right.
           [|- ?X = ?Z] =>
           set (H :=
                  match W in _ = Y return (A, _) = (Y, _) with
-                   eq_refl =>
+                   idpath =>
                    match W' in _ = Y return (_, A') = (_, Y) with
-                     eq_refl => eq_refl (A, A')
+                     idpath => idpath (A, A')
                    end
                  end : projT1 X = projT1 Z)
         end
@@ -326,9 +523,13 @@ Section Adjunct_Between_Id_unit_right.
       ?A = ?B => transitivity A; [|apply (@Adjunct_Id_unit_right _ _ _ _ adjb)]
     end.
     unfold W, W' in H; clear W W'; unfold H; clear H.
-    cbn.
-    destruct (Functor_id_unit_right _ _ F).
-    destruct (Functor_id_unit_left _ _ G).
+    cbn -[Functor_id_unit_right Functor_id_unit_left] in *.
+    set (W := Functor_id_unit_right _ _ F).
+    change (Functor_id_unit_right _ _ F) with W.
+    set (W' := Functor_id_unit_left _ _ G).
+    change (Functor_id_unit_left _ _ G) with W'.
+    destruct W.
+    destruct W'.
     trivial.
   Qed.
 
@@ -336,14 +537,18 @@ End Adjunct_Between_Id_unit_right.
 
 Definition Adjunct_Cat : Category :=
   {|
-    Obj := Category;
-    Hom := Adjunct_Between;
-    compose := @Adjunct_Between_Compose;
-    assoc := @Adjunct_Between_Compose_assoc;
+    Obj := {C : Category | IsHSet C};
+    Hom := fun C D => Adjunct_Between C.1 D.1;
+    compose := fun C D E F G => @Adjunct_Between_Compose C.1 D.1 E.1 F G;
+    assoc :=
+      fun A B C D adj adj' adj'' =>
+        @Adjunct_Between_Compose_assoc A.1 B.1 C.1 D.1 adj adj' adj'';
     assoc_sym :=
       fun A B C D adj adj' adj'' =>
-        eq_sym (@Adjunct_Between_Compose_assoc A B C D adj adj' adj'');
-    id := Adjunct_Between_Id;
-    id_unit_right := @Adjunct_Between_Id_unit_right;
-    id_unit_left := @Adjunct_Between_Id_unit_left
+        inverse (@Adjunct_Between_Compose_assoc A.1 B.1 C.1 D.1 adj adj' adj'');
+    id := fun C => Adjunct_Between_Id C.1;
+    id_unit_right := fun C D F => @Adjunct_Between_Id_unit_right C.1 D.1 F;
+    id_unit_left := fun C D F => @Adjunct_Between_Id_unit_left C.1 D.1 F;
+    Hom_HSet := fun C D => Adjunct_Between_HSet C.1 D.1 C.2 D.2
   |}.
+  

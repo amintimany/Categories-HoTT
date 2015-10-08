@@ -57,6 +57,7 @@ Section Prod_Func_Hom_Func_NT.
 
   Next Obligation.
   Proof.
+    intros.
     symmetry.
     apply Prod_Func_Hom_Func_NT_obligation_1.
   Qed.
@@ -122,7 +123,7 @@ Section Prod_Func_Hom_Func_invl.
   Qed.    
 
 End Prod_Func_Hom_Func_invl.
-
+(*
 (** If I : C ≃ D is an isomorphism of categories, then hom functor of C is naturally isomorphic to hom functor of D taken after conversion from C to D through I. In this section we prove this by providing both sides of natural isomorphism and showing that they are inverses. *)
 Section Hom_Func_to_Iso_Hom_Func.
   Context {C D : Category} (I : (C ≃≃ D ::> Cat)%isomorphism).
@@ -194,3 +195,4 @@ Section Hom_Func_to_Iso_Hom_Func.
   Qed.
   
 End Hom_Func_to_Iso_Hom_Func.
+*)

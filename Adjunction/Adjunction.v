@@ -1,6 +1,7 @@
 Require Import Essentials.Notations.
 Require Import Essentials.Types.
 Require Import Essentials.Facts_Tactics.
+Require Import Essentials.HoTT_Facts.
 Require Import Category.Main.
 Require Import Ext_Cons.Prod_Cat.Prod_Cat Ext_Cons.Prod_Cat.Operations.
 Require Import Functor.Main.
@@ -71,10 +72,76 @@ Functor F : C -> D is the left adjoint to functor G : D -> C if there is a natur
   Proof.
     destruct adj; destruct adj'; basic_simpl.
     ElimEq.
-    PIR.
+    doHomPIR.
     reflexivity.
-  Qed.
+  Defined.
 
+  Theorem Adjunct_eq_simplify_pair {adj adj' : Adjunct} : ((adj_unit adj = @adj_unit adj') *  (@adj_morph_ex adj = @adj_morph_ex adj')) → adj = adj'.
+  Proof.
+    intros (H1,H2).
+    apply Adjunct_eq_simplify; trivial.
+  Defined.
+
+  Theorem Adjunct_eq_simplify_pair_inv {adj adj' : Adjunct} : adj = adj' → ((adj_unit adj = @adj_unit adj') *  (@adj_morph_ex adj = @adj_morph_ex adj')).
+  Proof.
+    intros [].
+    exact (idpath, idpath).
+  Defined.
+
+  Theorem Adjunct_eq_simplify_pair_inv_left_inverse
+          {adj adj' : Adjunct}
+          (H : adj = adj')
+    :
+      Adjunct_eq_simplify_pair (Adjunct_eq_simplify_pair_inv H) = H
+  .
+  Proof.
+    destruct H.
+    cbn.
+    repeat rewrite (@contr _ _ idpath).
+    trivial.
+  Qed.  
+
+  Theorem Adjunct_HSet : IsHSet Adjunct.
+  Proof.
+    intros f g H1 H2.
+    destruct H1.
+    cbn in *.
+    assert
+      (
+        Hc :
+          IsHProp
+            (
+              ((adj_unit f = @adj_unit f) *  (@adj_morph_ex f = @adj_morph_ex f))
+            )
+      ).
+    {
+      apply Prod_Trunc.
+      apply (@NatTrans_HSet _ _ _ _ (adj_unit f) (adj_unit f)).
+      match type of (@adj_morph_ex f) with
+        ?W =>
+        cut (IsHSet W); [typeclasses eauto|]
+      end.
+      do 3 (apply @trunc_forall; [typeclasses eauto|intros ?x]).
+      refine (Hom_HSet).
+    }
+    {
+      apply
+        (
+          @left_inv_equi_trunc
+            (f = f)
+            _
+            _
+            Hc
+            (Adjunct_eq_simplify_pair_inv)
+            (Adjunct_eq_simplify_pair)
+            (Adjunct_eq_simplify_pair_inv_left_inverse)
+            idpath
+            H2
+        ).
+    }
+  Defined.
+
+  
   (** The hom functor definition of adjunction. F : C -> D is the left adjoint to G : D -> C if
            Hom_D(Fᵒᵖ, –) ≃ Hom_C(–, G)
 *)  
@@ -179,6 +246,7 @@ the types. Therefore, we have:
 
     Next Obligation.
     Proof.
+      intros.
       symmetry.
       apply Adj_to_UCU_Adj_obligation_1.
     Qed.      
@@ -230,6 +298,7 @@ the types. Therefore, we have:
 
     Next Obligation. (* Trans_com *)
     Proof.
+      intros.
       symmetry.
       apply Adj_to_Hom_Adj_LR_obligation_1.
     Qed.
@@ -250,13 +319,14 @@ the types. Therefore, we have:
       repeat rewrite assoc.
       refine (@f_equal _ _ (fun x => @compose _ _ _ _ x _) _ _ _).
       change (G _a (F _a h1))%morphism with ((G ∘ F) _a h1)%morphism.
-      refine (eq_trans _ (@f_equal _ _ (fun x => @compose _ _ _ _ x _) _ _ (Trans_com (adj_unit Adj) h1))).
+      refine (concat _ (@f_equal _ _ (fun x => @compose _ _ _ _ x _) _ _ (Trans_com (adj_unit Adj) h1))).
       rewrite assoc_sym.
       rewrite <- adj_morph_com; trivial.
     Qed.
 
     Next Obligation. (* Trans_com *)
     Proof.
+      intros.
       symmetry.
       apply Adj_to_Hom_Adj_RL_obligation_1.
     Qed.
@@ -301,6 +371,7 @@ the types. Therefore, we have:
 
     Next Obligation.
     Proof.
+      intros.
       symmetry.
       apply Hom_Adj_to_Adj_obligation_1.
     Qed.

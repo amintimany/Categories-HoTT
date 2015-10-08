@@ -153,6 +153,32 @@ Ltac Func_eq_simpl :=
 
 Hint Extern 3 => Func_eq_simpl.
 
+
+Lemma f_equal_Functor_eq_simplify_Oeq
+      {C C' : Category} (F G : (C –≻ C')%functor)
+      (Oeq : F _o = G _o)
+      (H : (fun x y =>
+              match Oeq in _ = V return
+                    ((x –≻ y) → ((V x) –≻ (V y)))%morphism
+              with
+                idpath => F  @_a x y
+              end
+           ) = G @_a
+      )
+  :
+    f_equal FO (Functor_eq_simplify _ _ Oeq H) = Oeq
+.
+Proof.
+  destruct F as [Fo Fa Fi Fc]; destruct G as [Go Ga Gi Gc].
+  cbn in *.
+  destruct Oeq.
+  destruct H.
+  doHomPIR.
+  cbn.
+  repeat rewrite (@contr _ _ idpath).
+  trivial.
+Qed.
+
 (** Given two categories C and D if the objects of D form a HSet then the type of functors
 C –≻ D also form a HSet.
 

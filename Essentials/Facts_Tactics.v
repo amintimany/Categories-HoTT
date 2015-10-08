@@ -41,6 +41,14 @@ Definition f_equal {A B : Type} (f : A → B) {x y : A} (H : x = y) : f x = f y
     end
 .
 
+Theorem f_equal_inverse {A B : Type} (f : A → B) {x y : A} (H : x = y)
+  : f_equal f (inverse H) = inverse (f_equal f H)
+.
+Proof.
+  destruct H.
+  trivial.
+Qed.
+  
 Definition equal_f {A B : Type} {f g : A → B} (H : f = g) : ∀ x : A, f x = g x
   :=
     fun x =>

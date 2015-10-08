@@ -9,6 +9,7 @@ or prove define these for the spcial case of Cat (now only of categories whose o
 -- Cat_Iso.v (the whole file)
 -- Comma_Opposite_Iso
 -- Comma_Right_Func_Iso
+-- Hom_Func_to_Iso_Hom_Func
 
 *) Functor_Image must be changed so that the criterion for homomorphisms is an HProp. This can be done by truncating the Forall_Links part to HProp.
 

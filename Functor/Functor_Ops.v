@@ -54,8 +54,8 @@ Section Functor_Assoc.
   Theorem Functor_assoc : (H ∘ G) ∘ F = H ∘ (G ∘ F).
   Proof.
     Func_eq_simpl; trivial.
-  Qed.
-
+  Defined.    
+                              
 End Functor_Assoc.
 
 (** The identitiy functor *)
@@ -73,13 +73,13 @@ Section Functor_Identity_Unit.
   Theorem Functor_id_unit_left : ((Functor_id C') ∘ F)%functor = F.
   Proof.
     Func_eq_simpl; trivial.
-  Qed.
+  Defined.
 
   (** Functor_id is the right identity of functor composition. *)
   Theorem Functor_id_unit_right : (Functor_compose (Functor_id _) F) = F.
   Proof.
     Func_eq_simpl; trivial.
-  Qed.
+  Defined.
 
 End Functor_Identity_Unit.
 

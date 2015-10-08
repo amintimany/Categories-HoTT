@@ -210,6 +210,6 @@ Section NatTrans_HSet.
           idpath
           H2
       ).
-  Qed.
+  Defined.
 
 End NatTrans_HSet.
